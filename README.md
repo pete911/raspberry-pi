@@ -58,4 +58,9 @@ services:
     restart: unless-stopped
 ```
 
-run `docker-compose -f pihole.yaml up -d`
+## start and configure pi-hole
+- run `docker-compose -f pihole.yaml up -d`
+- exec inside pi-hole container `docker exec -it pihole /bin/bash`
+- change password `pihole -a -p`
+
+Configure dns to point to pi-hole. Web UI can be accessed on `http://<ip>/admin`.
