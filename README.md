@@ -1,15 +1,34 @@
-# pihole
-
-instructions to install raspberry pihole
+# raspberry pi setup
 
 ## download rasbian lite
  - download rasbian lite
  - install with etcher
  - create empty 'ssh' file in boot partion (to enable ssh server)
 
+## setup
+SSH to raspberry pi (default username `pi` and password `raspberry`)
+ - change password `passwd`
+ - change hostname
+   - `sudo hostname <new_hostname>`
+   - `sudo vi /etc/hostname` change all 'raspberry' to new hostname
+   - `sudo vi /etc/hosts` change all 'raspberry' to new hostname
+ - update `sudo apt-get update && sudo apt-get upgrade -y`
+
+## ssh
+Locally (we name the keys with the same name as the new hostname wit set in the previous steps).
+Replace `<hostname>` and `<pi_IP>` in the instructions.
+ - `cd ~/.ssh`
+ - create ssh keys `ssh-keygen -f <hostname>`
+ - copy public key to raspberry pi `ssh-copy-id -i <hostname>.pub pi@<pi_IP>`
+ - add ssh config entry `vi config`
+```
+Host <hostname>
+   Hostname <pi_IP>
+   User pi
+   IdentityFile ~/.ssh/<hostname>
+```
+
 ## install docker and docker compose
-ssh to raspbarry pi (ssh should be enabled from the previous step), default username is `ip` and password is `raspberry`.
-Follow instructions after ssh to change password (or create and use ssh key)
 
  - [install docker](https://howchoo.com/g/nmrlzmq1ymn/how-to-install-docker-on-your-raspberry-pi)
    - `curl -sSL https://get.docker.com | sh`
@@ -18,49 +37,5 @@ Follow instructions after ssh to change password (or create and use ssh key)
    - `sudo apt-get install libffi-dev`
    - `sudo apt-get install -y python python-pip`
    - `sudo pip install docker-compose`
-   - `sudo shutdown -r now`
+   - `sudo reboot`
    - ssh back and test: `docker run hello-world`
-
-## create pi-hole docker compose
-Create `pihole.yaml`:
-```
-version: "3"
-
-# https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
-
-services:
-  pihole:
-    container_name: pihole
-    image: pihole/pihole:latest
-    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp"
-      - "80:80/tcp"
-      - "443:443/tcp"
-    environment:
-      TZ: 'America/Chicago'
-      # WEBPASSWORD: 'set a secure password here or it will be random'
-    # Volumes store your data between container upgrades
-    volumes:
-       - './etc-pihole/:/etc/pihole/'
-       - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
-    # run `touch ./var-log/pihole.log` first unless you like errors
-    # - './var-log/pihole.log:/var/log/pihole.log'
-    dns:
-      - 127.0.0.1
-      - 1.1.1.1
-    # Recommended but not required (DHCP needs NET_ADMIN)
-    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    cap_add:
-      - NET_ADMIN
-    restart: unless-stopped
-```
-
-## start and configure pi-hole
-- run `docker-compose -f pihole.yaml up -d`
-- exec inside pi-hole container `docker exec -it pihole /bin/bash`
-- change password `pihole -a -p`
-
-Configure dns to point to pi-hole. Web UI can be accessed on `http://<ip>/admin`.
