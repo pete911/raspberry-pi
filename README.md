@@ -32,6 +32,7 @@ Host <hostname>
 
  - [install docker](https://howchoo.com/g/nmrlzmq1ymn/how-to-install-docker-on-your-raspberry-pi)
    - `curl -sSL https://get.docker.com | sh`
+   - `sudo usermod -aG docker pi` (you need to logout and log back in after this step)
  - install docker-compose
    - `sudo apt-get update`
    - `sudo apt-get install libffi-dev`
